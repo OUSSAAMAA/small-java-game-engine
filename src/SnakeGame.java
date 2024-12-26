@@ -3,6 +3,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.util.ArrayList;
 
 import javax.swing.Timer;
 import javax.swing.JPanel;
@@ -10,7 +11,7 @@ import javax.swing.JPanel;
 public class SnakeGame extends JPanel implements ActionListener,KeyListener{
     int boardWidth;
     int boardHeight;
-    int tileSize = 12;
+    int tileSize = 25;
 
     Tile snakeHead;
     Tile target;
@@ -22,6 +23,8 @@ public class SnakeGame extends JPanel implements ActionListener,KeyListener{
     int velocityX;
     int velocityY;
 
+    ArrayList<Tile> snakeBody;
+
     SnakeGame(int width,int height){
         this.boardWidth = width;
         this.boardHeight = height;
@@ -29,16 +32,16 @@ public class SnakeGame extends JPanel implements ActionListener,KeyListener{
         setBackground(Color.BLACK);
         addKeyListener(this);
         setFocusable(true);
-        snakeHead = new Tile(5, 5);
+        snakeHead = new Tile(0, 0);
 
-        int randomX = (int)(Math.random()*((width/tileSize)-1));
-        int randomY = (int)(Math.random()*((height/tileSize)-4));
-        if(randomX == 5)randomX+=7;//make sure they don't overlap
-        target = new Tile(randomX,randomY);
+        placeFood();
+
+        snakeBody = new ArrayList<>();
+        snakeBody.add(snakeHead);
 
         velocityX = 0;
         velocityY = 0;
-        gameLoop = new Timer(105,(ActionListener) this);
+        gameLoop = new Timer(500,(ActionListener) this);
         gameLoop.start();
     }
     
@@ -60,6 +63,12 @@ public class SnakeGame extends JPanel implements ActionListener,KeyListener{
         g.setColor(Color.GREEN);
         g.fillRect(snakeHead.x*tileSize, snakeHead.y*tileSize, tileSize, tileSize);
 
+        //snake body
+        for (int i=0 ; i<snakeBody.size() ;i++) {
+            Tile snakPart = snakeBody.get(i);
+            g.fillRect(snakPart.x*tileSize, snakPart.y*tileSize, tileSize, tileSize);
+            
+        }
 
         //the snak food
         g.setColor(Color.RED);
@@ -76,25 +85,22 @@ public class SnakeGame extends JPanel implements ActionListener,KeyListener{
         }
     
     }
-
     @Override
     public void actionPerformed(ActionEvent e) {
-        if(snakeHead.x*tileSize == boardWidth-1 ) return;
-        // snakeHead.x = 0;
-
-        snakeHead.x+=velocityX;
-        snakeHead.y+=velocityY;
-
-
-
+        this.move();
+        if(collision(snakeHead, target)){
+            snakeBody.add(new Tile(target.x, target.y));
+            placeFood();
+            stopTile();
+        }
         repaint();
+
     }
 
     @Override
     public void keyPressed(KeyEvent e) {
         if(e.getKeyCode() == KeyEvent.VK_SPACE){
-            velocityX = 0;
-            velocityY = 0;
+            stopTile();
         }
         if(e.getKeyCode() == KeyEvent.VK_UP){
             velocityX = 0;
@@ -119,5 +125,56 @@ public class SnakeGame extends JPanel implements ActionListener,KeyListener{
     }
     @Override
     public void keyReleased(KeyEvent e) {
+    }
+    
+    public void move() {
+        //snak's body follow's the head
+        for (int i = snakeBody.size()-1; i >= 0; i--) {
+            Tile part = snakeBody.get(i);
+            if(i == 0){
+                part.x = snakeHead.x;
+                part.y = snakeHead.y;
+            }else{
+                part.x = snakeBody.get(i-1).x;
+                part.y = snakeBody.get(i-1).y;
+                
+            }
+        }
+            snakeHead.x += velocityX;
+            snakeHead.y += velocityY;
+            System.out.println("------------------------------------");
+            System.out.println(snakeHead.y);
+            System.out.println("------------------------------------");
+            if(snakeHead.x*tileSize == boardWidth ){
+                snakeHead.x = 0;
+            }
+            if(snakeHead.x == -1){
+                snakeHead.x = (boardWidth/tileSize);
+            }
+            if(snakeHead.y*tileSize == boardHeight){
+                snakeHead.y = 0;
+            }
+            if(snakeHead.y == -1){
+                snakeHead.y = (boardHeight/tileSize);
+            
+            }
+
+        }
+
+    public void stopTile(){
+        velocityX = 0;
+        velocityY = 0;
+    }
+
+    public boolean collision(Tile a, Tile b){
+        return (a.x == b.x && a.y == b.y);
+    }
+
+
+
+    public void placeFood(){
+        int randomX = (int)(Math.random()*((boardWidth/tileSize)-1));
+        int randomY = (int)(Math.random()*((boardHeight/tileSize)-4));
+        target = new Tile(randomX,randomY);
     }
 } 
