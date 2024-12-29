@@ -1,3 +1,4 @@
+package snake;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -25,7 +26,7 @@ public class SnakeGame extends JPanel implements ActionListener, KeyListener {
 
     ArrayList<Tile> snakeBody;
     boolean  gameOver = false; 
-    SnakeGame(int width, int height) {
+    public SnakeGame(int width, int height) {
         this.boardWidth = width;
         this.boardHeight = height;
         setPreferredSize(new Dimension(this.boardWidth, this.boardHeight));
@@ -40,7 +41,7 @@ public class SnakeGame extends JPanel implements ActionListener, KeyListener {
 
         velocityX = 0;
         velocityY = 0;
-        gameLoop = new Timer(200, (ActionListener) this);
+        gameLoop = new Timer(150, (ActionListener) this);
         gameLoop.start();
     }
 
@@ -76,7 +77,7 @@ public class SnakeGame extends JPanel implements ActionListener, KeyListener {
         g.setFont(new Font(Font.MONOSPACED,Font.PLAIN,14));
         g.setColor(Color.yellow);
         g.drawString("Score : "+String.valueOf(snakeBody.size()) , 15,15 );
-        if(gameOver){
+        if(gameOver == true){
             g.setFont(new Font(Font.SANS_SERIF,Font.PLAIN,27));
             g.setColor(Color.RED);
             g.drawString("Game over" , 200,200 );
@@ -96,7 +97,8 @@ public class SnakeGame extends JPanel implements ActionListener, KeyListener {
     @Override
     public void keyPressed(KeyEvent e) {
         if (e.getKeyCode() == KeyEvent.VK_SPACE) {
-            stopTile();
+            snakeBody.clear();
+            gameOver = false;
         }
         if (e.getKeyCode() == KeyEvent.VK_UP) {
             velocityX = 0;
@@ -147,7 +149,6 @@ public class SnakeGame extends JPanel implements ActionListener, KeyListener {
         for (int i = 0; i < snakeBody.size(); i++) {
             if (collision(snakeHead, snakeBody.get(i))){
                 stopTile();
-                gameOver = true;
                 break;
             }
         }
